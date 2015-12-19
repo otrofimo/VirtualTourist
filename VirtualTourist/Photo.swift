@@ -6,7 +6,7 @@
 //  Copyright © 2015 Oleg Trofimov. All rights reserved.
 //
 
-import Foundation
+import UIKit
 import CoreData
 
 class Photo : NSManagedObject {
