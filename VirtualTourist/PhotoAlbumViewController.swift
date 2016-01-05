@@ -208,23 +208,21 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                 // create parse array of photos
                 if let photoDict = photosResultDict[Flickr.Keys.Photo] as? [[String : AnyObject]] {
 
-                    let parsedPhotos = photoDict.map { (dictionary : [String : AnyObject]) -> Photo in
-
-                        let photo = Photo(dictionary: dictionary, context: self.sharedContext)
-                        // set pin for photo
-                        photo.pin = self.pin
-
-                        return photo
-                    }
-
-                    // save context
-                    print("Saving context")
-                    self.saveContext()
-
-                    print("parsed \(parsedPhotos.count) photos")
-
-                    // Update the collection on the main thread
                     dispatch_async(dispatch_get_main_queue()) {
+
+                        let _ = photoDict.map { (dictionary : [String : AnyObject]) -> Photo in
+
+                            // Looks like I need to do this on the main queue?
+                            let photo = Photo(dictionary: dictionary, context: self.sharedContext)
+                            // set pin for photo
+                            photo.pin = self.pin
+
+                            return photo
+                        }
+
+                        // save context
+                        print("Saving context")
+                        self.saveContext()
 
                         print("reloading collection")
                         self.statusLabel.hidden = true
