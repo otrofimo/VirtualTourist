@@ -40,7 +40,6 @@ class Flickr : NSObject {
                 let newError = Flickr.errorForData(data, response: response, error: error)
                 completionHandler(result: nil, error: newError)
             } else {
-                print("Step 3 - taskForResource's completionHandler is invoked.")
                 Flickr.parseJSONWithCompletionHandler(data!, completionHandler: completionHandler)
             }
         }
@@ -77,7 +76,6 @@ class Flickr : NSObject {
         if let error = parsingError {
             completionHandler(result: nil, error: error)
         } else {
-            print("Step 4 - parseJSONWithCompletionHandler is invoked.")
             completionHandler(result: parsedResult, error: nil)
         }
     }

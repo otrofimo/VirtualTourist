@@ -12,13 +12,13 @@ extension Flickr {
 
     struct Constants {
         static let BASE_URL = "https://api.flickr.com/services/rest/"
-        static let METHOD_NAME = "flickr.photos.geo.photosForLocation"
+        static let METHOD_NAME = "flickr.photos.search"
         static let API_KEY = Flickr.sharedInstance().valueForAPIKey("FlickrAPIKey")
         static let EXTRAS = "url_m"
         static let DATA_FORMAT = "json"
         static let NO_JSON_CALLBACK = "1"
 
-        static let PhotoURL = "https://farm{farm-id}.staticflickr.com/{server-id}/{id}_{secret}_[mstzb].jpg"
+        static let PhotoURL = "https://farm{:farm-id}.staticflickr.com/{:server-id}/{:id}_{:secret}_[:size-param].jpg"
     }
 
     struct Keys {
@@ -27,33 +27,22 @@ extension Flickr {
         static let Accuracy     = "accuracy"
         static let PerPage      = "per_page"
         static let Page         = "page"
+        static let Method       = "method"
+        static let Format       = "format"
+        static let BBox         = "bbox"
+        static let JSONCallback = "nojsoncallback"
+
+        static let BOUNDING_BOX_HALF_WIDTH = 1.0
+        static let BOUNDING_BOX_HALF_HEIGHT = 1.0
+        static let LAT_MIN = -90.0
+        static let LAT_MAX = 90.0
+        static let LON_MIN = -180.0
+        static let LON_MAX = 180.0
+
+        static let Photos       = "photos"
+        static let Photo        = "photo"
 
         static let ErrorStatusMessage = "message"
-    }
-
-    struct PhotoKeys {
-        static let FarmId       = "farm-id"
-        static let ServerId     = "server-id"
-        static let Id           = "id"
-        static let Secret       = "secret"
-
-        // Image Sizes
-        static let SmallSquare  = "s" // 75x75
-        static let LargeSquare  = "q" // 150x150
-        static let Thumbnail    = "t" // 100 on longest side
-
-        static let Small240     = "m" // 240 on longest side
-        static let Small320     = "n" // 320 on longest side
-
-        static let Medium500    = "-" // 500 on longest side
-        static let Medium640    = "z" // 640 on longest side
-        static let Medium800    = "c" // 800 on longest side
-
-        static let Large1024    = "b" // 1024 on longest side
-        static let Large1600    = "h" // 1600 on longest side
-        static let Large2048    = "k" // 2048 on longest side
-
-        static let Original     = "o" // original image
     }
 
     func valueForAPIKey(keyname:String) -> String {
@@ -62,5 +51,15 @@ extension Flickr {
 
         let value:String = plist?.objectForKey(keyname) as! String
         return value
+    }
+
+    func createBBoxString(latitude : Double, longitude: Double ) -> String {
+        /* Fix added to ensure box is bounded by minimum and maximums */
+        let bottom_left_lon = max(longitude - Keys.BOUNDING_BOX_HALF_WIDTH, Keys.LON_MIN)
+        let bottom_left_lat = max(latitude - Keys.BOUNDING_BOX_HALF_HEIGHT, Keys.LAT_MIN)
+        let top_right_lon = min(longitude + Keys.BOUNDING_BOX_HALF_HEIGHT, Keys.LON_MAX)
+        let top_right_lat = min(latitude + Keys.BOUNDING_BOX_HALF_HEIGHT, Keys.LAT_MAX)
+
+        return "\(bottom_left_lon),\(bottom_left_lat),\(top_right_lon),\(top_right_lat)"
     }
 }
