@@ -17,6 +17,9 @@ extension Flickr {
         static let EXTRAS = "url_m"
         static let DATA_FORMAT = "json"
         static let NO_JSON_CALLBACK = "1"
+        static let PER_PAGE = 21
+        static let MAX_PHOTOS = 4000
+        static let MAX_PAGES = MAX_PHOTOS/PER_PAGE + 1
 
         static let PhotoURL = "https://farm{:farm-id}.staticflickr.com/{:server-id}/{:id}_{:secret}_[:size-param].jpg"
     }
@@ -31,6 +34,7 @@ extension Flickr {
         static let Format       = "format"
         static let BBox         = "bbox"
         static let JSONCallback = "nojsoncallback"
+        static let Photo_Count  = ""
 
         static let BOUNDING_BOX_HALF_WIDTH = 1.0
         static let BOUNDING_BOX_HALF_HEIGHT = 1.0

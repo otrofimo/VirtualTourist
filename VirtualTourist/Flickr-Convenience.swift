@@ -15,11 +15,10 @@ extension Flickr {
         let parameters : [String : AnyObject] = [
             Keys.Method    : Constants.METHOD_NAME,
             Keys.BBox      : Flickr.sharedInstance().createBBoxString(latitude, longitude: longitude),
-//            Keys.Latitude  : latitude,
-//            Keys.Longitude : longitude,
             Keys.Page      : page,
             Keys.Format    : Constants.DATA_FORMAT,
-            Keys.JSONCallback : Constants.NO_JSON_CALLBACK
+            Keys.JSONCallback : Constants.NO_JSON_CALLBACK,
+            Keys.PerPage : Constants.PER_PAGE
         ]
 
         let task = self.taskForResource(parameters) { JSONResult, error in
@@ -48,6 +47,7 @@ extension Flickr {
                 let newError = Flickr.errorForData(data, response: response, error: error)
                 completionHandler(imageData: nil, error: newError)
             } else {
+
                 completionHandler(imageData: data, error: nil)
             }
         }

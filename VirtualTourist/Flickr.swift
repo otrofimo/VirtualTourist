@@ -32,8 +32,6 @@ class Flickr : NSObject {
         let url = NSURL(string: urlString)!
         let request = NSURLRequest(URL: url)
 
-        print(url)
-
         let task = session.dataTaskWithRequest(request) {data, response, downloadError in
 
             if let error = downloadError {

@@ -49,7 +49,7 @@ class Photo : NSManagedObject {
         static let Original     = "o" // original image
     }
 
-    @NSManaged var id: NSNumber
+    @NSManaged var id: NSNumber!
     @NSManaged var title: String
     @NSManaged var imagePath: String
     @NSManaged var pin: Pin?
@@ -90,10 +90,12 @@ class Photo : NSManagedObject {
 
     var image: UIImage? {
         get {
-            return Flickr.Caches.imageCache.imageWithIdentifier(imagePath)
+            let identifier = "\(self.id)"
+            return Flickr.Caches.imageCache.imageWithIdentifier(identifier)
         }
         set {
-            Flickr.Caches.imageCache.storeImage(newValue, withIdentifier: imagePath)
+            let identifier = "\(self.id)"
+            Flickr.Caches.imageCache.storeImage(newValue, withIdentifier: identifier)
         }
     }
 }

@@ -135,7 +135,6 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate, NSFetc
     // MARK : NSFetchedResultsControllerDelegate methods
 
     func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
-        print("didChangeObject")
     }
 
     func mapView(mapView: MKMapView, regionDidChangeAnimated animated: Bool) {

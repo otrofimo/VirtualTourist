@@ -22,7 +22,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     @IBOutlet weak var okButton: UIBarButtonItem!
 
     var pin : Pin!
-    var page = 0
+    var currentPage : Int = 1
+    var totalPages : Int = 1
     var annotation : MKPointAnnotation!
 
     // For FetchedResultsController to perform batch updates
@@ -55,7 +56,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             statusLabel.hidden = false
             newCollectionButton.enabled = false
             self.activityIndicator.startAnimating()
-            fetchAllPhotos()
+            fetchAllPhotos(currentPage)
+        } else {
+            statusLabel.hidden = true
         }
     }
 
@@ -76,7 +79,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
 
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         let sectionInfo = self.fetchedResultsController.sections![section]
-        print("total objects fetched: \(sectionInfo.numberOfObjects)")
         return sectionInfo.numberOfObjects
     }
 
@@ -138,8 +140,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
 
     func controllerDidChangeContent(controller: NSFetchedResultsController) {
 
-        print("in controllerDidChangeContent. changes.count: \(insertedIndexPaths.count + deletedIndexPaths.count)")
-
         collectionView.performBatchUpdates({() -> Void in
 
             for indexPath in self.insertedIndexPaths {
@@ -173,19 +173,22 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                 self.statusLabel.hidden = false
                 self.newCollectionButton.enabled = false
                 self.activityIndicator.startAnimating()
-                self.fetchAllPhotos()
+                self.fetchAllPhotos(self.randomPage(self.totalPages))
             }
         }
     }
 
     func deleteAllPhotos(completionHandler: ()-> Void) {
         for photo in fetchedResultsController.fetchedObjects as! [Photo] {
+            photo.image = nil
             self.sharedContext.deleteObject(photo)
         }
+        self.saveContext()
         completionHandler()
     }
 
-    func fetchAllPhotos() {
+    func fetchAllPhotos(page: Int) {
+
         Flickr.sharedInstance().getPhotos(page, latitude: pin.latitude, longitude: pin.longitude) { JSONResult, error in
             if error != nil {
                 // Show error message over collection view
@@ -197,34 +200,24 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                 return
             }
 
-            print("Results fetched")
-
             if let photosResultDict = JSONResult.valueForKey(Flickr.Keys.Photos) as? [String : AnyObject] {
 
-                print("ok cool we found the photos")
-
-                self.page = photosResultDict["page"] as! Int
+                self.totalPages = min(photosResultDict["pages"] as! Int, Flickr.Constants.MAX_PAGES)
+                self.currentPage = photosResultDict["page"] as! Int
 
                 // create parse array of photos
                 if let photoDict = photosResultDict[Flickr.Keys.Photo] as? [[String : AnyObject]] {
 
                     dispatch_async(dispatch_get_main_queue()) {
-
                         let _ = photoDict.map { (dictionary : [String : AnyObject]) -> Photo in
 
-                            // Looks like I need to do this on the main queue?
                             let photo = Photo(dictionary: dictionary, context: self.sharedContext)
-                            // set pin for photo
                             photo.pin = self.pin
 
                             return photo
                         }
 
-                        // save context
-                        print("Saving context")
                         self.saveContext()
-
-                        print("reloading collection")
                         self.statusLabel.hidden = true
                         self.activityIndicator.stopAnimating()
                         self.newCollectionButton.enabled = true
@@ -241,13 +234,14 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
 
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
         let photoToDelete = fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
-        photoToDelete.pin = nil
+        photoToDelete.image = nil
+        self.sharedContext.deleteObject(photoToDelete)
+        self.saveContext()
     }
 
     // Layout the collection view
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
 
         // Lay out the collection view so that cells take up 1/3 of the width,
         // with no space in between.
@@ -261,5 +255,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         collectionView.collectionViewLayout = layout
     }
 
+    func randomPage(totalPages: Int) -> Int {
+        let page = Int(arc4random_uniform(UInt32(totalPages)) + 1)
+        return page
+    }
 }
 
